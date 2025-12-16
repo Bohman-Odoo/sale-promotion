@@ -15,9 +15,10 @@ class SaleOrder(models.Model):
         domain = program.rule_products_domain
         program = program.with_context(promo_domain_product=domain)
         extendable_domain = safe_eval(domain)
-        intersected_products = self.order_line.product_id & self.env[
-            "product.product"
-        ].search(extendable_domain)
+        products_in_order = self.order_line.product_id
+        intersected_products = self.env["product.product"].search(
+            expression.AND([extendable_domain, [('id', 'in', products_in_order.ids)]])
+        )
         amount_field = (
             "price_subtotal"
             if program.rule_minimum_amount_tax_inclusion == "tax_excluded"

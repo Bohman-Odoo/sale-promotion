@@ -3,6 +3,8 @@
 from odoo import models
 
 
+from odoo.tools.safe_eval import safe_eval
+
 class SaleCouponProgram(models.Model):
     _inherit = "sale.coupon.program"
 
@@ -22,9 +24,7 @@ class SaleCouponProgram(models.Model):
             # affected
             if program.strict_per_product_limit:
                 domain = order._get_reward_values_discount_strict_limit_lines(program)
-            discount_specific_product_ids = program.with_context(
-                promo_domain_product=domain
-            ).discount_specific_product_ids
-            if any(p in order_products for p in discount_specific_product_ids):
+            
+            if order_products.filtered_domain(safe_eval(domain)):
                 programs += program
         return programs
